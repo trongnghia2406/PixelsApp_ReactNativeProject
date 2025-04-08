@@ -29,6 +29,21 @@ const HomeScreen = () => {
     const router = useRouter();
     const [isEndReached, setIsEndReached] = useState(false);
 
+
+    useEffect(() => {
+        fetchImages();
+    }, []);
+    const fetchImages = async (params = { page: 1 }, append = true) => {
+        console.log("params: ", params, append);
+        let res = await apiCall(params);
+        if (res.success && res?.data?.hits) {
+            if (append)
+                setImages([...images, ...res.data.hits])
+            else
+                setImages([...res.data.hits])
+        }
+    }
+
     // console.log('filters: ', filters);
     return (
         <View style={[styles.container, { paddingTop }]}>
