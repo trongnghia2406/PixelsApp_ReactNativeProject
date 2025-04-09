@@ -97,6 +97,42 @@ const HomeScreen = () => {
         fetchImages(params, false);
     }
 
+    const handleChangeCategory = (cat) => {
+        setActiveCategory(cat);
+        clearSearch();
+        setImages([]);
+        page = 1;
+        let params = {
+            page,
+            ...filters
+        }
+        if (cat) params.category = cat;
+        fetchImages(params, false);
+    }
+
+    const handleSearch = (text) => {
+        setSearch(text);
+        if (text.length > 2) {
+            // search for this text
+            page = 1;
+            setImages([]);
+            setActiveCategory(null); // clear category when searching
+            fetchImages({ page, q: text, ...filters }, false)
+        }
+        if (text == "") {
+            // reset results
+            page = 1;
+            searchInputRef?.current?.clear();
+            setImages([]);
+            setActiveCategory(null); // clear category when searching
+            fetchImages({ page, ...filters }, false)
+        }
+    }
+    const clearSearch = () => {
+        setSearch("");
+        searchInputRef?.current?.clear();
+    }
+
     // console.log('filters: ', filters);
     return (
         <View style={[styles.container, { paddingTop }]}>
