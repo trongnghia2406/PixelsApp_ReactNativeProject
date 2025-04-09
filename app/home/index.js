@@ -44,6 +44,59 @@ const HomeScreen = () => {
         }
     }
 
+    const openFiltersModal = () => {
+        modalRef?.current?.present();
+    }
+    const closeFiltersModal = () => {
+        modalRef?.current?.close();
+    }
+
+    const applyFilters = () => {
+        if (filters) {
+            page = 1;
+            setImages([]);
+            let params = {
+                page,
+                ...filters
+            }
+            if (activeCategory) params.category = activeCategory;
+            if (search) params.q = search;
+            fetchImages(params, false)
+        }
+        closeFiltersModal();
+    }
+
+    const resetFilters = () => {
+        if (filters) {
+            page = 1;
+            setFilters(null);
+            let params = {
+                page,
+                ...filters
+            }
+            if (activeCategory) params.category = activeCategory;
+            if (search) params.q = search;
+            fetchImages(params, false)
+        }
+
+        closeFiltersModal();
+    }
+
+    const clearThisFilter = (filterName) => {
+        let filterz = { ...filters };
+        delete filterz[filterName];
+        setFilters({ ...filterz });
+        page = 1;
+        setImages([]);
+        let params = {
+            page,
+            ...filterz
+        }
+        if (activeCategory) params.category = activeCategory;
+        if (search) params.q = search;
+        fetchImages(params, false);
+    }
+
     // console.log('filters: ', filters);
     return (
         <View style={[styles.container, { paddingTop }]}>
