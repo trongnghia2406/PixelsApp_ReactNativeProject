@@ -40,6 +40,63 @@ const ImageScreen = () => {
         setStatus('');
     }
 
+    const handleShareImage = async () => {
+        if (Platform.OS == 'web') {
+            try {
+                await navigator.clipboard.writeText(imageURL);
+                showToast('Link copied to clipboard');
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                showToast('Failed to copy link');
+            }
+        } else {
+            setStatus('sharing');
+            let uri = await downloadFile(); // download image
+            if (uri) {
+                // share image
+                await Sharing.shareAsync(uri);
+            }
+        }
+
+    }
+
+    const downloadFile = async () => {
+        try {
+            const { uri } = await FileSystem.downloadAsync(imageURL, filePath);
+            setStatus('');
+            console.log('downloaded at: ', uri);
+            const permission = await MediaLibrary.requestPermissionsAsync();
+            if (permission.granted) {
+                await MediaLibrary.createAssetAsync(uri);
+                showToast('Image saved to gallery');
+            } else {
+                showToast('Permission denied to save image');
+            }
+            return uri;
+        } catch (err) {
+            console.log('got error: ', err.message);
+            setStatus('');
+            Alert.alert('Download failed', err.message);
+            return null;
+        }
+    }
+
+    const showToast = (message) => {
+        Toast.show({
+            type: 'success',
+            text1: message,
+            position: 'bottom'
+        });
+    }
+
+    const toastConfig = {
+        success: ({ text1, props, ...rest }) => (
+            <View style={styles.toast}>
+                <Text style={styles.toastText}>{text1}</Text>
+            </View>
+        )
+    }
+
     return (
         <BlurView
             style={styles.container}
