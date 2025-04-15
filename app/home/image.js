@@ -22,6 +22,24 @@ const ImageScreen = () => {
     const imageURL = uri;
     const filePath = `${FileSystem.documentDirectory}${fileName}`
 
+    const getSize = () => {
+        const aspectRatio = item?.imageWidth / item?.imageHeight;
+        const maxWidth = Platform.OS == 'web' ? wp(50) : wp(92);
+        let calculatedHeight = maxWidth / aspectRatio;
+        let calculatedWidth = maxWidth;
+        if (aspectRatio < 1) { // portrait image
+            calculatedWidth = calculatedHeight * aspectRatio;
+        }
+        return {
+            width: calculatedWidth,
+            height: calculatedHeight
+        }
+    }
+
+    const onLoad = () => {
+        setStatus('');
+    }
+
     return (
         <BlurView
             style={styles.container}
