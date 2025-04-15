@@ -40,6 +40,29 @@ const ImageScreen = () => {
         setStatus('');
     }
 
+    const handleDownloadImage = async () => {
+        if (Platform.OS == 'web') {
+            showToast('Downloading...');
+            const response = await fetch(imageURL);
+            const blob = await response.blob(); // convert to binary data
+            const url = URL.createObjectURL(blob); // temp url
+
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = fileName || 'download.jpg';
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+
+            URL.revokeObjectURL(url);
+        } else {
+            setStatus('downloading');
+            let uri = await downloadFile();
+            if (uri) showToast('Image downloaded');
+        }
+
+    }
+
     const handleShareImage = async () => {
         if (Platform.OS == 'web') {
             try {
