@@ -2,6 +2,7 @@ import { View, Text, Pressable, ActivityIndicator } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather, FontAwesome6, Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../hooks/useTheme';
 import { theme } from '../../constants/theme';
 import { StyleSheet } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -14,9 +15,11 @@ import FiltersModal from '../../components/filtersModal';
 import { useRouter } from 'expo-router';
 
 
-
 var page = 1;
 const HomeScreen = () => {
+    const { isDark, toggleTheme, currentTheme } = useTheme();
+    const colors = theme.colors[currentTheme] || theme.colors.light;
+    const styles = getStyles(colors);
     const { top } = useSafeAreaInsets();
     const paddingTop = top > 0 ? top + 10 : 30;
     const [search, setSearch] = useState('');
@@ -28,6 +31,7 @@ const HomeScreen = () => {
     const scrollRef = useRef(null);
     const router = useRouter();
     const [isEndReached, setIsEndReached] = useState(false);
+
 
 
     useEffect(() => {
@@ -163,19 +167,26 @@ const HomeScreen = () => {
         })
     }
     const handleTextDebounce = useCallback(debounce(handleSearch, 400), []);
-    // console.log('filters: ', filters);
+
     return (
-        <View style={[styles.container, { paddingTop }]}>
+        <View style={[styles.container, { paddingTop, backgroundColor: colors.background }]}>
             {/* header */}
             <View style={styles.header}>
                 <Pressable onPress={handleScrollUp}>
-                    <Text style={styles.title}>
-                        Pixels
-                    </Text>
+                    <Text style={[styles.title, { color: colors.textSolid }]}>Pixels</Text>
                 </Pressable>
-                <Pressable onPress={openFiltersModal}>
-                    <FontAwesome6 name="bars-staggered" size={22} color={theme.colors.neutral(0.7)} />
-                </Pressable>
+                <View style={{ flexDirection: 'row', gap: 15 }}>
+                    <Pressable onPress={toggleTheme}>
+                        <Feather
+                            name={isDark ? "sun" : "moon"}
+                            size={22}
+                            color={colors.text(0.7)}
+                        />
+                    </Pressable>
+                    <Pressable onPress={openFiltersModal}>
+                        <FontAwesome6 name="bars-staggered" size={22} color={colors.text(0.7)} />
+                    </Pressable>
+                </View>
             </View>
             <ScrollView
                 onScroll={handleScroll}
@@ -184,25 +195,27 @@ const HomeScreen = () => {
                 contentContainerStyle={{ gap: 15 }}
             >
                 {/* search bar */}
-                <View style={styles.searchBar}>
+                <View style={[styles.searchBar, {
+                    borderColor: colors.grayBG,
+                    backgroundColor: colors.grayBG
+                }]}>
                     <View style={styles.searchIcon}>
-                        <Feather name='search' size={24} color={theme.colors.neutral(0.4)} />
+                        <Feather name='search' size={24} color={colors.text(0.4)} />
                     </View>
                     <TextInput
                         placeholder='Search for photos....'
-                        // value={search}
+                        placeholderTextColor={colors.text(0.5)}
                         ref={searchInputRef}
                         onChangeText={handleTextDebounce}
-                        style={styles.searchInput}
+                        style={[styles.searchInput, { color: colors.text(0.9) }]}
                     />
                     {
                         search && (
-                            <Pressable onPress={() => handleSearch("")} style={styles.closeIcon}>
-                                <Ionicons name='close' size={24} color={theme.colors.neutral(0.6)} />
+                            <Pressable onPress={() => handleSearch("")} style={[styles.closeIcon, { backgroundColor: colors.text(0.1) }]}>
+                                <Ionicons name='close' size={24} color={colors.text(0.6)} />
                             </Pressable>
                         )
                     }
-
                 </View>
                 {/* categories */}
                 <View style={styles.categories}>
@@ -216,7 +229,10 @@ const HomeScreen = () => {
                                 {
                                     Object.keys(filters).map((key, index) => {
                                         return (
-                                            <View key={key} style={styles.filterItem}>
+                                            <View
+                                                key={key}
+                                                style={[styles.filterItem]}
+                                            >
                                                 {
                                                     key == 'colors' ? (
                                                         <View style={{
@@ -226,11 +242,11 @@ const HomeScreen = () => {
                                                             backgroundColor: filters[key]
                                                         }} />
                                                     ) : (
-                                                        <Text style={styles.filterItemText}>{filters[key]}</Text>
+                                                        <Text style={[styles.filterItemText, { color: colors.textSolid }]}>{filters[key]}</Text>
                                                     )
                                                 }
-                                                <Pressable style={styles.filterCloseIcon} onPress={() => clearThisFilter(key)}>
-                                                    <Ionicons name='close' size={14} color={theme.colors.neutral(0.9)} />
+                                                <Pressable style={[styles.filterCloseIcon, { backgroundColor: colors.text(0.2) }]} onPress={() => clearThisFilter(key)}>
+                                                    <Ionicons name='close' size={14} color={colors.textSolid} />
                                                 </Pressable>
                                             </View>
                                         )
@@ -241,7 +257,6 @@ const HomeScreen = () => {
                         </View>
                     )
                 }
-
                 {/* images masonry grid */}
                 <View>
                     {
@@ -250,7 +265,7 @@ const HomeScreen = () => {
                 </View>
                 {/* loading */}
                 <View style={{ marginBottom: 70, marginTop: images.length > 0 ? 10 : 70 }}>
-                    <ActivityIndicator size={'large'} />
+                    <ActivityIndicator size={'large'} color={colors.textSolid} />
                 </View>
             </ScrollView >
             {/* filter modal */}
@@ -265,7 +280,8 @@ const HomeScreen = () => {
         </View >
     )
 }
-const styles = StyleSheet.create({
+
+const getStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
         gap: 15
@@ -279,7 +295,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: hp(4),
         fontWeight: theme.fontWeights.semibold,
-        color: theme.colors.neutral(0.9)
     },
     searchBar: {
         marginHorizontal: wp(4),
@@ -287,8 +302,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: theme.colors.grayBG,
-        backgroundColor: theme.colors.white,
         padding: 6,
         paddingLeft: 10,
         borderRadius: theme.radius.lg,
@@ -303,7 +316,6 @@ const styles = StyleSheet.create({
         fontSize: hp(1.8)
     },
     closeIcon: {
-        backgroundColor: theme.colors.neutral(0.1),
         padding: 8,
         borderRadius: theme.radius.sm
     },
@@ -312,12 +324,14 @@ const styles = StyleSheet.create({
         gap: 10
     },
     filterItem: {
-        backgroundColor: theme.colors.grayBG,
-        padding: 3,
+        backgroundColor: colors.inactiveBackground,
+        borderWidth: 1,
+        borderColor: colors.borderColor,
+
+        padding: 8,
         flexDirection: 'row',
         alignItems: 'center',
         borderRadius: theme.radius.xs,
-        padding: 8,
         gap: 10,
         paddingHorizontal: 10,
     },
@@ -325,10 +339,9 @@ const styles = StyleSheet.create({
         fontSize: hp(1.9)
     },
     filterCloseIcon: {
-        backgroundColor: theme.colors.neutral(0.2),
         padding: 4,
         borderRadius: 7
     }
-})
+});
 
 export default HomeScreen

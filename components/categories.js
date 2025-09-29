@@ -1,5 +1,6 @@
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native'
 import React from 'react'
+import { useTheme } from '../hooks/useTheme';
 import { data } from '../constants/data'
 import { theme } from '../constants/theme'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -26,8 +27,11 @@ const Categories = ({ activeCategory, handleChangeCategory }) => {
     )
 }
 const CategoryItem = ({ title, index, isActive, handleChangeCategory }) => {
-    let color = isActive ? theme.colors.white : theme.colors.neutral(0.8);
-    let backgroundColor = isActive ? theme.colors.neutral(0.8) : theme.colors.white;
+    const { currentTheme } = useTheme();
+    const colors = theme.colors[currentTheme] || theme.colors.light;
+    let color = isActive ? theme.colors.white : colors.textSolid;
+    let backgroundColor = isActive ? colors.activeBackground : colors.inactiveBackground;
+
     return (
         <Animated.View entering={FadeInRight.delay(index * 200).duration(1000).springify().damping(14)}>
             <Pressable
@@ -48,8 +52,6 @@ const styles = StyleSheet.create({
         padding: 12,
         paddingHorizontal: 15,
         borderWidth: 1,
-        borderColor: theme.colors.grayBG,
-        // backgroundColor: 'white',
         borderRadius: theme.radius.lg,
         borderCurve: 'continuous'
     },
